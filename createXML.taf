@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<TAF Version="0x02000002">
+  <Comments/>
+  <Program>
+    <ActionRef Ref="init"/>
+    <ActionRef Ref="If_SoundSets">
+      <ActionRef Ref="Directory1"/>
+      <ActionRef Ref="WriteXML1"/>
+    </ActionRef>
+    <ActionRef Ref="ElseIf_SoundList">
+      <ActionRef Ref="Directory2"/>
+      <ActionRef Ref="For_substring_fileNames">
+        <ActionRef Ref="substring_fileNames"/>
+      </ActionRef>
+      <ActionRef Ref="For_substring_dirNames">
+        <ActionRef Ref="substring_dirNames"/>
+      </ActionRef>
+      <ActionRef Ref="For_delrows">
+        <ActionRef Ref="For2">
+          <ActionRef Ref="If">
+            <ActionRef Ref="delrows"/>
+          </ActionRef>
+        </ActionRef>
+      </ActionRef>
+      <ActionRef Ref="setNames"/>
+      <ActionRef Ref="For_setNames">
+        <ActionRef Ref="Directory"/>
+        <ActionRef Ref="For_sndFiles">
+          <ActionRef Ref="sndFiles"/>
+        </ActionRef>
+        <ActionRef Ref="============"/>
+      </ActionRef>
+    </ActionRef>
+    <ActionRef Ref="Else">
+      <ActionRef Ref="Read_Error"/>
+    </ActionRef>
+    <ActionRef Ref="Return"/>
+    <ActionRef Ref="File"/>
+    <ActionRef Ref="For">
+      <ActionRef Ref="If_file">
+        <ActionRef Ref="assign_fileName"/>
+      </ActionRef>
+      <ActionRef Ref="If_dir">
+        <ActionRef Ref="assign_dirName"/>
+      </ActionRef>
+      <ActionRef Ref="For1">
+        <ActionRef Ref="If_not_locate">
+          <ActionRef Ref="Results2"/>
+        </ActionRef>
+      </ActionRef>
+    </ActionRef>
+    <ActionRef Ref="memo_intersect"/>
+    <ActionRef Ref="memo_substring"/>
+    <ActionRef Ref="memo_path_metatags"/>
+  </Program>
+  <Actions>
+    <ResultAction ID="init" Sig="null">
+      <ResultsOutput Ref="init.Results"/>
+    </ResultAction>
+    <IfAction Expanded="True" ID="If_SoundSets" Sig="if  ">
+      <Expression><![CDATA[('<@postarg docType>'='SoundSets')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@postarg docType>]]></ExpLeft>
+        <ExpRight>SoundSets</ExpRight>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+    </IfAction>
+    <DirectoryAction ID="Directory1" Sig="tdir">
+      <Protocol><![CDATA[File System]]></Protocol>
+      <Connection>
+        <Host/>
+        <Port/>
+        <Authentication Encrypted="True" Encryption="50">
+          <UserName/>
+          <Password/>
+        </Authentication>
+      </Connection>
+      <ListDirectory DirOnly="True" FileInfo="False" HiddenFiles="False" Recursively="False">
+        <Path><![CDATA[<@MAKEPATH "<@WEBROOT>" "<@APPFILEPATH>">effects]]></Path>
+        <SortRule>Name</SortRule>
+        <Variable>fileDataRaw</Variable>
+      </ListDirectory>
+      <ResultsOutput Ref="Directory1.Results"/>
+    </DirectoryAction>
+    <FileAction ID="WriteXML1" Sig="flvt">
+      <Protocol><![CDATA[File System]]></Protocol>
+      <Connection>
+        <Host/>
+        <Port/>
+        <Authentication Encrypted="True" Encryption="50">
+          <UserName/>
+          <Password/>
+        </Authentication>
+      </Connection>
+      <WriteFile CreateParentDirs="False" FileExistsRule="Overwrite">
+        <Name><![CDATA[<@MAKEPATH "<@WEBROOT>" "<@APPFILEPATH>">\effects\sound_list.xml]]></Name>
+        <Data><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<XML>
+<@FOR start="1" stop="<@CALC @@request$fileDataRaw>"><@assign name="sData" value='<@substring str="@@request$fileDataRaw[@@i,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@i,1]>">'><@assign name="sLabel" value='<@upper str="<@substring str="@@sData" start="1" numchars="1">"><@substring str="@@sData" start="2" numchars="<@length @@sData>">'>
+<sList>
+	<sNum>@@i</sNum>
+	<sLabel>@@sLabel</sLabel>
+	<sData>@@sData</sData>
+</sList>
+<@assign name="i" value="<@CALC @@i+1>"></@FOR>
+</XML>]]></Data>
+        <MacFileType>TEXT</MacFileType>
+        <MacFileCreator>R*ch</MacFileCreator>
+        <Scope>Request</Scope>
+        <FilenameVariable/>
+      </WriteFile>
+    </FileAction>
+    <ElseIfAction Expanded="True" ID="ElseIf_SoundList" Sig="elif">
+      <Expression><![CDATA[('<@postarg docType>'='SoundList')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@postarg docType>]]></ExpLeft>
+        <ExpRight>SoundList</ExpRight>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+    </ElseIfAction>
+    <DirectoryAction ID="Directory2" Sig="tdir">
+      <Protocol><![CDATA[File System]]></Protocol>
+      <Connection>
+        <Host/>
+        <Port/>
+        <Authentication Encrypted="True" Encryption="50">
+          <UserName/>
+          <Password/>
+        </Authentication>
+      </Connection>
+      <ListDirectory DirOnly="False" FileInfo="True" HiddenFiles="False" Recursively="False">
+        <Path><![CDATA[<@MAKEPATH "<@WEBROOT>" "<@APPFILEPATH>">effects]]></Path>
+        <SortRule>Name</SortRule>
+        <Variable>fileDataRaw</Variable>
+      </ListDirectory>
+      <ResultsOutput Ref="Directory2.Results"/>
+    </DirectoryAction>
+    <ForAction Direction="Up" ID="For_substring_fileNames" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@fn>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>i</LoopVariable>
+    </ForAction>
+    <ResultAction ID="substring_fileNames" Sig="null">
+      <ResultsOutput Ref="substring_fileNames.Results"/>
+    </ResultAction>
+    <ForAction Direction="Up" ID="For_substring_dirNames" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@dn>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>i</LoopVariable>
+    </ForAction>
+    <ResultAction ID="substring_dirNames" Sig="null">
+      <ResultsOutput Ref="substring_dirNames.Results"/>
+    </ResultAction>
+    <ForAction Direction="Up" ID="For_delrows" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@dirNames>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>i</LoopVariable>
+    </ForAction>
+    <ForAction Direction="Up" Expanded="True" ID="For2" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@fileNames>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>j</LoopVariable>
+    </ForAction>
+    <IfAction Expanded="True" ID="If" Sig="if  ">
+      <Expression><![CDATA[('<@locate str="@@fileNames[@@j,1]" findstr="@@dirNames[@@i,1]">'>'0')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@locate str="@@fileNames[@@j,1]" findstr="@@dirNames[@@i,1]">]]></ExpLeft>
+        <ExpRight>0</ExpRight>
+        <Operator>gthn</Operator>
+      </ExpressionInfo>
+    </IfAction>
+    <ResultAction ID="delrows" Sig="null">
+      <ResultsOutput Ref="delrows.Results"/>
+    </ResultAction>
+    <ResultAction ID="setNames" Sig="null">
+      <ResultsOutput Ref="setNames.Results"/>
+    </ResultAction>
+    <ForAction Direction="Up" Expanded="True" ID="For_setNames" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@setNames>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>i</LoopVariable>
+    </ForAction>
+    <DirectoryAction ID="Directory" Sig="tdir">
+      <Protocol><![CDATA[File System]]></Protocol>
+      <Connection>
+        <Host/>
+        <Port/>
+        <Authentication Encrypted="True" Encryption="50">
+          <UserName/>
+          <Password/>
+        </Authentication>
+      </Connection>
+      <ListDirectory DirOnly="False" FileInfo="True" HiddenFiles="False" Recursively="False">
+        <Path><![CDATA[<@MAKEPATH "<@WEBROOT>" "<@APPFILEPATH>">effects\<@var setNames[@@i,1]>]]></Path>
+        <SortRule>Name</SortRule>
+        <Variable>sndFiles</Variable>
+      </ListDirectory>
+      <ResultsOutput Ref="Directory.Results"/>
+    </DirectoryAction>
+    <ForAction Direction="Up" Expanded="True" ID="For_sndFiles" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@sndFiles>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>j</LoopVariable>
+    </ForAction>
+    <ResultAction ID="sndFiles" Sig="null">
+      <ResultsOutput Ref="sndFiles.Results"/>
+    </ResultAction>
+    <ResultAction ID="============" Sig="null">
+      <ResultsOutput Ref="============.Results"/>
+    </ResultAction>
+    <ElseAction ID="Else" Sig="else"/>
+    <ResultAction ID="Read_Error" Sig="null">
+      <ResultsOutput Ref="Read_Error.Results"/>
+    </ResultAction>
+    <ReturnAction ID="Return" Sig="stop"/>
+    <FileAction ID="File" Sig="flvt">
+      <Protocol><![CDATA[File System]]></Protocol>
+      <Connection>
+        <Host/>
+        <Port/>
+        <Authentication Encrypted="True" Encryption="50">
+          <UserName/>
+          <Password/>
+        </Authentication>
+      </Connection>
+      <WriteFile CreateParentDirs="False" FileExistsRule="Overwrite">
+        <Name><![CDATA[<@MAKEPATH "<@WEBROOT>" "<@APPFILEPATH>">effects\<@var setNames[@@i,1]>\<@var setNames[@@i,1]>_sounds.xml]]></Name>
+        <Data><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<XML>
+<@FOR start="1" stop="<@CALC @@request$fileDataRaw>"><@assign name="sData" value='<@substring str="@@request$fileDataRaw[@@i,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@i,1]>">'><@assign name="sLabel" value='<@upper str="<@substring str="@@sData" start="1" numchars="1">"><@substring str="@@sData" start="2" numchars="<@length @@sData>">'>]]></Data>
+        <MacFileType>TEXT</MacFileType>
+        <MacFileCreator>R*ch</MacFileCreator>
+        <Scope>Request</Scope>
+        <FilenameVariable/>
+      </WriteFile>
+    </FileAction>
+    <ForAction Direction="Up" ID="For" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@request$fileDataRaw>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>j</LoopVariable>
+    </ForAction>
+    <IfAction ID="If_file" Sig="if  ">
+      <Expression><![CDATA[('<@var request$fileDataRaw[@@j, 2]>'='F') and ('<@locate str="@@request$fileDataRaw[@@j,1]" findstr="_sounds.xml">'>'0')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@var request$fileDataRaw[@@j, 2]>]]></ExpLeft>
+        <ExpRight>F</ExpRight>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@locate str="@@request$fileDataRaw[@@j,1]" findstr="_sounds.xml">]]></ExpLeft>
+        <ExpRight>0</ExpRight>
+        <Conjunction><![CDATA[and ]]></Conjunction>
+        <Operator>gthn</Operator>
+      </ExpressionInfo>
+    </IfAction>
+    <ResultAction ID="assign_fileName" Sig="null">
+      <ResultsOutput Ref="assign_fileName.Results"/>
+    </ResultAction>
+    <ElseIfAction Expanded="True" ID="If_dir" Sig="elif">
+      <Expression><![CDATA[('<@var request$fileDataRaw[@@j, 2]>'='D')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@var request$fileDataRaw[@@j, 2]>]]></ExpLeft>
+        <ExpRight>D</ExpRight>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+    </ElseIfAction>
+    <ResultAction ID="assign_dirName" Sig="null">
+      <ResultsOutput Ref="assign_dirName.Results"/>
+    </ResultAction>
+    <ForAction Direction="Up" Expanded="True" ID="For1" Sig="forl">
+      <Start>1</Start>
+      <Stop><![CDATA[<@calc @@request$fileDataRaw>]]></Stop>
+      <Increment>1</Increment>
+      <Scope>Request</Scope>
+      <LoopVariable>m</LoopVariable>
+    </ForAction>
+    <IfAction Expanded="True" ID="If_not_locate" Sig="if  ">
+      <Expression><![CDATA[('@@request$fileDataRaw[@@m,2]'='F') and ('<@locate str="@@request$fileDataRaw[@@m,1]" findstr="@@dirName">'='0')]]></Expression>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[@@request$fileDataRaw[@@m,2]]]></ExpLeft>
+        <ExpRight>F</ExpRight>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+      <ExpressionInfo>
+        <ExpLeft><![CDATA[<@locate str="@@request$fileDataRaw[@@m,1]" findstr="@@dirName">]]></ExpLeft>
+        <ExpRight>0</ExpRight>
+        <Conjunction><![CDATA[and ]]></Conjunction>
+        <Operator>iseq</Operator>
+      </ExpressionInfo>
+    </IfAction>
+    <ResultAction ID="Results2" Sig="null">
+      <ResultsOutput Ref="Results2.Results"/>
+    </ResultAction>
+    <ResultAction ID="memo_intersect" Sig="null">
+      <ResultsOutput Ref="memo_intersect.Results"/>
+    </ResultAction>
+    <ResultAction ID="memo_substring" Sig="null">
+      <ResultsOutput Ref="memo_substring.Results"/>
+    </ResultAction>
+    <ResultAction ID="memo_path_metatags" Sig="null">
+      <ResultsOutput Ref="memo_path_metatags.Results"/>
+    </ResultAction>
+  </Actions>
+  <DataSources/>
+  <Outputs>
+    <Output ID="init.Results" Type="HTML"><![CDATA[<@assign name="i" value="1">
+<!--<@assign name="j" value="1">-->]]></Output>
+    <Output ID="Directory1.Results" Type="HTML"><![CDATA[<@assign name="numFindAt" value="<@locate str="@@request$fileDataRaw[1,1]" findstr="effects">">
+<@assign name="numCutAt" value='<@calc expr="@@numFindAt + 8">'>
+
+<@comment>
+<@FOR start="1" stop="<@CALC @@request$fileDataRaw>">
+<@substring str="@@request$fileDataRaw[@@j,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@j,1]>"><br>
+<@assign name="j" value="<@CALC @@j+1>">
+</@FOR>
+</@comment>]]></Output>
+    <Output ID="Directory2.Results" Type="HTML"><![CDATA[<!--<@assign name="folderName" value=""> -->
+<@assign name="numFindAt" value="<@locate str="@@request$fileDataRaw[1,1]" findstr="effects">">
+<@assign name="numCutAt" value='<@calc expr="@@numFindAt + 8">'>
+
+<@assign name="fn" value='<@array value=<@filter array="fileDataRaw" scope="request" expr='#2="F"'>>'>
+<@assign name="dn"  value='<@array value=<@filter array="fileDataRaw" scope="request" expr='#2="D"'>>'>
+
+<!--<@substring str="@@request$fileDataRaw[@@j,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@j,1]>">-->
+
+<@comment>
+<@FOR start="1" stop="<@CALC @@request$fileDataRaw>">
+<@assign name="sData" value='<@substring str="@@request$fileDataRaw[@@j,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@j,1]>">'> <br>
+@@sData
+<@assign name="j" value="<@CALC @@j+1>">
+</@FOR>
+</@comment>]]></Output>
+    <Output ID="substring_fileNames.Results" Type="HTML"><![CDATA[<@addrows array="fileNames" value='<@substring str="@@fn[@@i,1]" start="@@numCutAt" numchars="<@length @@fn[@@i,1]>">'>
+
+<@comment>
+<@assign  name="fileNames" value='<@array value='<@substring str="@@fn[@@i,1]" start="@@numCutAt" numchars="<@length @@fn[@@i,1]>">'>'>
+</@comment>
+]]></Output>
+    <Output ID="substring_dirNames.Results" Type="HTML"><![CDATA[<@addrows array="dirNames" value='<@substring str="@@dn[@@i,1]" start="@@numCutAt" numchars="<@length @@dn[@@i,1]>">'>
+]]></Output>
+    <Output ID="delrows.Results" Type="HTML"><![CDATA[<@delrows array="dirNames" position="@@i" num="1">
+]]></Output>
+    <Output ID="setNames.Results" Type="HTML"><![CDATA[<@assign name="setNames" value=<@array value='<@distinct array="dirNames">'>>]]></Output>
+    <Output ID="Directory.Results" Type="HTML"><![CDATA[<@assign name="numDirFindAt" value="<@locate str="@@sndFiles[1,1]" findstr="@@setNames[@@i,1]">">
+<@assign name="numDirCutAt" value='<@calc expr="@@numDirFindAt + <@length @@setNames[@@i,1]> + 1">'>
+
+]]></Output>
+    <Output ID="sndFiles.Results" Type="HTML"><![CDATA[<@assign name="sFileMP3" value=<@substring str="@@sndFiles[@@j,1]" start="@@numDirCutAt" numchars="<@length @@sndFiles[@@j,1]>">>
+<@assign name="sFile"    value=<@left str="@@sFileMP3" numchars='<@calc expr="<@locate str="@@sFileMP3" findstr="."> - 1">'>>
+]]></Output>
+    <Output ID="============.Results" Type="HTML"><![CDATA[<br>===========================================<br>]]></Output>
+    <Output ID="Read_Error.Results" Type="HTML"><![CDATA[!READ ERROR!]]></Output>
+    <Output ID="assign_fileName.Results" Type="HTML"><![CDATA[<@assign name="fileName" value='<@substring str="@@request$fileDataRaw[@@j,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@j,1]>">'>
+fileName = <@var name="fileName"><br>]]></Output>
+    <Output ID="assign_dirName.Results" Type="HTML"><![CDATA[<@assign name="dirName" value='<@substring str="@@request$fileDataRaw[@@j,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@j,1]>">'>
+dirName = <@var name="dirName"><br>]]></Output>
+    <Output ID="Results2.Results" Type="HTML"><![CDATA[<br>
+===================<br>
+PASSED!<br><br>
+@@request$fileDataRaw[@@m,1]<br>
+@@dirName<br>
+===================<br><br>]]></Output>
+    <Output ID="memo_intersect.Results" Type="HTML"><![CDATA[
+<@comment>
+<@intersect array1="dirNames" array2="dirNames">
+
+
+<@array name="test" value="1,a,a; 2,b,c; 3,c,c; 4,b,c">
+<@array name="test2" value="1,a,a; 2,b,b; 3,c,c">
+
+<@intersect array1="test" array2="test2">
+</@comment>
+
+<@comment>
+<@array name="hoge1" value="ketsumokuchu,chinkoshikko,unko; alphabeta,gammakappa,thetazeta">
+<@array name="hoge2" value="captain,pokochin,ketsu; pusai,alpha,zeta">
+
+<@intersect array1="hoge1" array2="hoge2" cols="1, 2, 3">
+
+</@comment>]]></Output>
+    <Output ID="memo_substring.Results" Type="HTML"><![CDATA[<@FOR start="1" stop="<@CALC @@request$fileDataRaw>">
+	<@assign name="sData" value='<@substring str="@@request$fileDataRaw[@@i,1]" start="@@numCutAt" numchars="<@length @@request$fileDataRaw[@@i,1]>">'>
+	<@assign name="i" value="<@CALC @@i+1>">
+</@FOR>]]></Output>
+    <Output ID="memo_path_metatags.Results" Type="HTML"><![CDATA[cgi = <@CGI> <br>
+WEBROOT = <@WEBROOT> <br>
+APPFILE = <@APPFILE> <br>
+APPFILEPATH = <@APPFILEPATH> <br>
+APPFILENAME = <@APPFILENAME> <br>
+MAKEPATH (see also source) = <@MAKEPATH "ROOTPATH" "USERPATH">\FILENAME <br>
+]]></Output>
+  </Outputs>
+</TAF>
